@@ -66,7 +66,7 @@ setMethod(
 
         # extract region ------------------------------------------------------
 
-        check.region <- all(is.na(object@region))
+        check.region <- !isTRUE(object@meta$has_region)
         seq <- convert_to_seq(object@dnaseq)
         seq.region <- extract_region(object, check.region)
 
@@ -111,7 +111,8 @@ setMethod(
         return(new(
             "regioned_dna",
             dnaseq = seq.mut,
-            region = object@region
+            region = object@region,
+            meta = object@meta
         ))
     }
 )

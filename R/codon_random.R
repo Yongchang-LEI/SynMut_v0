@@ -61,7 +61,7 @@ setMethod(
             n = n
         }
 
-        check.region <- all(is.na(object@region))
+        check.region <- !isTRUE(object@meta$has_region)
         seq <- convert_to_seq(object@dnaseq)
         seq.region <- extract_region(object, check.region)
 
@@ -72,7 +72,8 @@ setMethod(
         return(new(
             "regioned_dna",
             dnaseq = seq.mut,
-            region = object@region
+            region = object@region,
+            meta = object@meta
         ))
     }
 )
@@ -82,14 +83,12 @@ setMethod(
     f = "codon_random",
     signature = "DNAStringSet",
     definition = function(object, n, keep, numcode) {
-        object <- c(object, DNAStringSet("ATG"))
         seq <- lapply(as.character(object), function(x) {
             splitseq(s2c(x))
         })
 
         seq.mut <- mutation_random_main(seq, n, keep, numcode)
 
-        seq.mut <- seq.mut[seq_len(length(seq.mut) - 1)]
         seq.mut <- DNAStringSet(unlist(lapply(seq.mut, c2s)))
 
         return(seq.mut)
@@ -132,4 +131,3 @@ mutation_random_main <- function(seq.region, n, keep, numcode){
 
     return(seq.mut)
 }
-

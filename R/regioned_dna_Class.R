@@ -4,9 +4,14 @@
 #'
 #' Recording codon DNA sequences and region.
 #'
+#' When no region is provided, \code{region} is stored as an empty list and
+#' \code{meta$has_region} is set to \code{FALSE}.
+#'
 #' @slot dnaseq a DNAStingSet object recording the sequence(s)
 #' @slot region a list specifying paticular regions in the sequences
 #'   allowed to be mutated
+#' @slot meta a list containing metadata, including \code{has_region} to
+#'   indicate whether region data are present
 #'
 #' @importFrom methods setClass
 #' @import Biostrings
@@ -19,18 +24,23 @@
 
 setClass(Class = "regioned_dna",
     slots = c(dnaseq = "DNAStringSet",
-        region = "list"))
+        region = "list",
+        meta = "list"),
+    prototype = prototype(
+        region = list(),
+        meta = list(has_region = TRUE)
+    ))
 
 setValidity("regioned_dna",
     function(object) {
         object.region <- object@region
         object.seq <- object@dnaseq
-        check.na <- all(is.na(object.region))
+        has_region <- isTRUE(object@meta$has_region)
         dnaseq.n <- length(object.seq)
         region.n <- length(object.region)
         check.3 <-
             all(vapply(object.seq, length, numeric(1)) %% 3 == 0)
-        if (!check.na) {
+        if (has_region) {
             check.length <- dnaseq.n == region.n
             check.num <-
                 vapply(object.seq, length, numeric(1)) / 3 ==
@@ -55,7 +65,7 @@ setMethod(
     signature = "regioned_dna",
     definition = function(object) {
         cat("An object of class ", class(object), "\n", sep = "")
-        cat("Number of sequences: ", length(object@dnaseq) - 1, "\n", sep = "")
+        cat("Number of sequences: ", length(object@dnaseq), "\n", sep = "")
     }
 )
 
@@ -88,7 +98,10 @@ setMethod(
     f = "get_region",
     signature = "regioned_dna",
     definition = function(object) {
-        object@region[seq_len(length(object@region) - 1)]
+        if (!isTRUE(object@meta$has_region)) {
+            return(object@region)
+        }
+        object@region
     }
 )
 
@@ -118,7 +131,7 @@ setMethod(
     f = "get_dna",
     signature = "regioned_dna",
     definition = function(object) {
-        return(object@dnaseq[seq_len(length(object@dnaseq) - 1)])
+        return(object@dnaseq)
     }
 )
 
@@ -153,8 +166,7 @@ setMethod(
     f = "get_cu",
     signature = "regioned_dna",
     definition = function(object) {
-        dnaseq <- object@dnaseq[seq_len(length(object@dnaseq) - 1)]
-        oligonucleotideFrequency(dnaseq, width = 3, step = 3)
+        oligonucleotideFrequency(object@dnaseq, width = 3, step = 3)
     }
 )
 
@@ -195,8 +207,7 @@ setMethod(
     f = "get_du",
     signature = "regioned_dna",
     definition = function(object) {
-        dnaseq <- object@dnaseq[seq_len(length(object@dnaseq) - 1)]
-        oligonucleotideFrequency(dnaseq, width = 2, step = 1)
+        oligonucleotideFrequency(object@dnaseq, width = 2, step = 1)
     }
 )
 
@@ -236,8 +247,7 @@ setMethod(
     f = "get_nu",
     signature = "regioned_dna",
     definition = function(object) {
-        dnaseq <- object@dnaseq[seq_len(length(object@dnaseq) - 1)]
-        oligonucleotideFrequency(dnaseq, width = 1, step = 1)
+        oligonucleotideFrequency(object@dnaseq, width = 1, step = 1)
     }
 )
 
@@ -278,8 +288,7 @@ setMethod(
     f = "get_freq",
     signature = "regioned_dna",
     definition = function(object, numcode) {
-        dnaseq <- object@dnaseq[seq_len(length(object@dnaseq) - 1)]
-        tmp <- oligonucleotideFrequency(dnaseq,
+        tmp <- oligonucleotideFrequency(object@dnaseq,
             width = 3, step = 3)
         tmp <- apply(tmp, 1, function(x) {
             r <- freq(x, numcode)
@@ -363,8 +372,7 @@ setMethod(
     f = "get_rscu",
     signature = "regioned_dna",
     definition = function(object, numcode) {
-        dnaseq <- object@dnaseq[seq_len(length(object@dnaseq) - 1)]
-        tmp <- oligonucleotideFrequency(dnaseq,
+        tmp <- oligonucleotideFrequency(object@dnaseq,
             width = 3, step = 3)
         tmp <- apply(tmp, 1, function(x) {
             r <- freq(x, numcode)

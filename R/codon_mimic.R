@@ -57,7 +57,11 @@ setMethod(
         alt <- as.numeric(alt)
         names(alt) <- sort(names(GENETIC_CODE))
         result <-
-            codon.mimic(alt, dna.seq = object@dnaseq, region = object@region, numcode)
+            codon.mimic(alt,
+                dna.seq = object@dnaseq,
+                region = object@region,
+                numcode,
+                object@meta)
         return(result)
     }
 )
@@ -74,7 +78,8 @@ setMethod(
         result <- codon.mimic(cu.target,
             dna.seq = object@dnaseq,
             region = object@region,
-            numcode)
+            numcode,
+            object@meta)
         return(result)
     }
 )
@@ -92,13 +97,14 @@ setMethod(
         result <- codon.mimic(cu.target,
             dna.seq = object@dnaseq,
             region = object@region,
-            numcode)
+            numcode,
+            object@meta)
         return(result)
     }
 )
 
-codon.mimic <- function(cu.target, dna.seq, region, numcode) {
-    check.region <- all(is.na(region))
+codon.mimic <- function(cu.target, dna.seq, region, numcode, meta) {
+    check.region <- !isTRUE(meta$has_region)
     seq <- convert_to_seq(dna.seq)
     if (!check.region) {
         #have region
@@ -118,7 +124,8 @@ codon.mimic <- function(cu.target, dna.seq, region, numcode) {
     seq.mut <- DNAStringSet(unlist(lapply(seq.mut, c2s)))
     return(new("regioned_dna",
         dnaseq = seq.mut,
-        region = region))
+        region = region,
+        meta = meta))
 }
 
 

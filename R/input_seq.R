@@ -9,6 +9,9 @@
 #'   in amino acid sequence) that is allowed to be mutated in the sequences.
 #'   Both \code{1 / 0} or \code{TRUE / FALSE} encoding is OK. Please refer to
 #'   Examples below for reference.
+#'   When \code{region} is empty or \code{NA}, the resulting object sets
+#'   \code{region} to an empty list and stores \code{has_region = FALSE} in
+#'   \code{meta}.
 #' @param ... ...
 #' @return A regioned_dna-class object
 #' @seealso \code{\link{get_cu}}, \code{\link{get_du}},
@@ -47,8 +50,6 @@ setMethod(
     signature = signature(object = "character"),
     definition = function(object, region) {
         dnaseq <- readDNAStringSet(filepath = object)
-        dnaseq <-
-            append(dnaseq, DNAStringSet('atg')) #helper sequence
         gernerate_rgd(dnaseq, region)
     }
 )
@@ -58,9 +59,7 @@ setMethod(
     f = "input_seq",
     signature = signature(object = "DNAStringSet"),
     definition = function(object, region) {
-        dnaseq <-
-            append(object, DNAStringSet('atg')) #helper sequence
-        gernerate_rgd(dnaseq, region)
+        gernerate_rgd(object, region)
     }
 )
 
@@ -69,9 +68,7 @@ setMethod(
     f = "input_seq",
     signature = signature(object = "DNAString"),
     definition = function(object, region) {
-        dnaseq <- #helper sequence
-            append(DNAStringSet(object), DNAStringSet('atg'))
-        gernerate_rgd(dnaseq, region)
+        gernerate_rgd(DNAStringSet(object), region)
     }
 )
 
@@ -79,11 +76,12 @@ setMethod(
 # helper function ---------------------------------------------------------
 
 gernerate_rgd <- function(dnaseq, region){
-    if (all(is.na(region))) {
+    if (is.null(region) || all(is.na(region))) {
         return(new(
             "regioned_dna",
             dnaseq = dnaseq,
-            region = list(NA)
+            region = list(),
+            meta = list(has_region = FALSE)
         ))
     } else {
         if (!is(region, "data.frame")) {
@@ -97,7 +95,8 @@ gernerate_rgd <- function(dnaseq, region){
         return(new(
             "regioned_dna",
             dnaseq = dnaseq,
-            region = c(region, list(TRUE))
+            region = region,
+            meta = list(has_region = TRUE)
         ))
     }
 }
