@@ -67,7 +67,7 @@ setMethod(
         # extract region ------------------------------------------------------
 
         region <- object@region
-        check.region <- all(is.na(region))
+        check.region <- !isTRUE(object@meta$has_region)
         seq <- convert_to_seq(object@dnaseq)
         seq.region <- extract_region(object, check.region)
 
@@ -100,6 +100,9 @@ setMethod(
 
         # synonmous codon interchange -----------------------------------------
 
+        if (check.region) {
+            region <- vector("list", length(seq.mut))
+        }
         seq.mut <-
             dinu_to.keep(check.region,
                 seq.mut,
@@ -115,7 +118,8 @@ setMethod(
         return(new(
             "regioned_dna",
             dnaseq = seq.mut,
-            region = object@region
+            region = object@region,
+            meta = object@meta
         ))
 
     }
