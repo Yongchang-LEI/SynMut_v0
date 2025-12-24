@@ -46,6 +46,7 @@ setMethod(
     f = "input_seq",
     signature = signature(object = "character"),
     definition = function(object, region) {
+        message("This is the development version of SynMut")
         dnaseq <- readDNAStringSet(filepath = object)
         dnaseq <-
             append(dnaseq, DNAStringSet('atg')) #helper sequence

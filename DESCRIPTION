@@ -1,4 +1,4 @@
-Package: SynMutDev
+Package: SynMut
 Type: Package
 Title: SynMut: Designing Synonymously Mutated Sequences with Different Genomic Signatures
 Version: 1.1.5

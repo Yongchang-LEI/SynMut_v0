@@ -1,5 +1,5 @@
 context("Mutations")
-library("SynMutDev")
+library("SynMut")
 filepath <- system.file("extdata", "example.fasta", package = "SynMut")
 filepath.csv <- system.file("extdata", "target_regions.csv", package = "SynMut")
 region <- read.csv(filepath.csv)
