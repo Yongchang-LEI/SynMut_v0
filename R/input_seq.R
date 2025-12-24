@@ -7,7 +7,9 @@
 #'   be in open reading frame(ORF).
 #' @param region \code{NA}. A data.frame specifying paticular regions (positions
 #'   in amino acid sequence) that is allowed to be mutated in the sequences.
-#'   Both \code{1 / 0} or \code{TRUE / FALSE} encoding is OK. Please refer to
+#'   Both \code{1 / 0} or \code{TRUE / FALSE} encoding is OK. Alternatively, a
+#'   numeric vector of 1-based codon positions to be mutated can be supplied
+#'   and will be applied to all sequences.
 #'   Examples below for reference.
 #' @param ... ...
 #' @return A regioned_dna-class object
@@ -27,6 +29,9 @@
 #' # Creating from exsisting DNAStringSet object
 #' seq <- Biostrings::DNAStringSet("ATCGATCGA")
 #' rgd.seq <- input_seq(seq)
+#'
+#' # Input with codon position vector (1-based)
+#' rgd.seq <- input_seq(seq, region = c(1, 3))
 #'
 #' @name input_seq
 #' @rdname input_seq-methods
@@ -86,6 +91,28 @@ gernerate_rgd <- function(dnaseq, region){
             region = list(NA)
         ))
     } else {
+        if (is.numeric(region) && is.vector(region) && length(region) > 0) {
+            positions <- unique(as.integer(region))
+            if (any(is.na(positions)) || any(positions < 1)) {
+                stop("codon positions must be positive integers")
+            }
+            seq.lengths <- vapply(dnaseq, length, numeric(1))
+            seq.codons <- seq.lengths / 3
+            seq.codons <- seq.codons[seq_len(length(seq.codons) - 1)]
+            region <- lapply(seq.codons, function(n.codons) {
+                if (any(positions > n.codons)) {
+                    stop("codon positions exceed sequence length")
+                }
+                mask <- rep(FALSE, n.codons)
+                mask[positions] <- TRUE
+                mask
+            })
+            return(new(
+                "regioned_dna",
+                dnaseq = dnaseq,
+                region = c(region, list(TRUE))
+            ))
+        }
         if (!is(region, "data.frame")) {
             stop("the region input must be in data.frame format")
         }
