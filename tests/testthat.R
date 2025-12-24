@@ -1,4 +1,4 @@
 library(testthat)
-library(SynMut)
+library(SynMutDev)
 
 test_check("SynMut")

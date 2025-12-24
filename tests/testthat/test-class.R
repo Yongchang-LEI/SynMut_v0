@@ -1,5 +1,5 @@
 context("regioned_dna-Class")
-library("SynMut")
+library("SynMutDev")
 filepath <-
     system.file("extdata", "example.fasta", package = "SynMut")
 filepath.csv <-
